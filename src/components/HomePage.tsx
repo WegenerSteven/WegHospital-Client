@@ -13,24 +13,24 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Welcome to <span className="text-blue-600">WegHospital</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 leading-relaxed">
             Your comprehensive hospital management solution. Streamline patient care, 
             manage appointments, and connect with healthcare professionals all in one place.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/dashboard">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
                 View Dashboard
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/contact">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
                 Contact Us
               </Button>
             </Link>
@@ -39,11 +39,11 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-12">
           Why Choose WegHospital?
         </h2>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="text-center p-6 bg-white rounded-lg shadow-sm border">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-blue-600" />
@@ -78,11 +78,11 @@ export default function HomePage() {
 
       {/* Stats Section */}
       <section className="bg-blue-600 text-white py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
             Trusted by Healthcare Professionals
           </h2>
-          <div className="grid md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold mb-2">500+</div>
               <div className="text-blue-200">Patients Served</div>
@@ -104,22 +104,22 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
             Ready to Get Started?
           </h2>
           <p className="text-gray-600 mb-8">
             Join our platform today and experience the future of healthcare management.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/login">
-              <Button size="lg">
+              <Button size="lg" className="w-full sm:w-auto">
                 Sign In
               </Button>
             </Link>
             <Link to="/register">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
                 Create Account
               </Button>
             </Link>
@@ -129,12 +129,12 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8">
-        <div className="container mx-auto px-4 text-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <Heart className="w-6 h-6 text-red-500 mr-2" />
             <span className="text-xl font-semibold">WegHospital</span>
           </div>
-          <p className="text-gray-400">
+          <p className="text-gray-400 text-sm sm:text-base">
             © 2025, WegHospital. All rights reserved. | Built with React & TanStack
           </p>
         </div>

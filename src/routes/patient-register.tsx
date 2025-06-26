@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import PatientRegistrationForm from '../components/PatientRegistrationForm'
+import NewPatientRegistrationForm from '../components/NewPatientRegistrationForm'
 
 export const Route = createFileRoute('/patient-register')({
-  component: PatientRegistrationForm,
+  component: NewPatientRegistrationForm,
 })

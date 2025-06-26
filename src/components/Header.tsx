@@ -25,44 +25,41 @@ export default function Header() {
 
           {/* Desktop navigation */}
           <nav className='hidden md:flex md:items-center md:space-x-8'>
-            <Link 
-              to='/' 
-              className='text-gray-600 hover:text-gray-900 font-medium transition-colors' 
+            <Link
+              to='/'
+              className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
               activeProps={{ className: 'text-blue-600' }}
             >
               Home
             </Link>
-            <Link 
-              to='/dashboard' 
-              className='text-gray-600 hover:text-gray-900 font-medium transition-colors' 
+            <Link
+              to='/dashboard'
+              className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
               activeProps={{ className: 'text-blue-600' }}
             >
               Dashboard
             </Link>
-            <Link 
-              to='/about' 
-              className='text-gray-600 hover:text-gray-900 font-medium transition-colors' 
+            <Link
+              to='/about'
+              className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
               activeProps={{ className: 'text-blue-600' }}
             >
               About Us
             </Link>
-            <Link 
-              to='/contact' 
-              className='text-gray-600 hover:text-gray-900 font-medium transition-colors' 
+            <Link
+              to='/contact'
+              className='text-gray-600 hover:text-gray-900 font-medium transition-colors'
               activeProps={{ className: 'text-blue-600' }}
             >
               Contact
             </Link>
           </nav>
-
-          {/* Navigation buttons */}
-          <div className='hidden md:flex md:items-center md:space-x-4'>
-            <Link to='/dashboard'>
-              <Button>
-                Patient Dashboard
-              </Button>
-            </Link>
+          <div className="flex gap-4 justify-center hidden md:flex md:items-center md:space-x-4">
+            <Link to="/login"><Button size="lg">Sign In</Button></Link>
+            <Link to="/register"><Button variant="outline" size="lg">Create Account</Button></Link>
           </div>
+
+
 
           {/* Mobile menu button */}
           <button
@@ -77,42 +74,53 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className='md:hidden border-t border-gray-200 py-4'>
             <div className='space-y-4'>
-              <Link 
-                to='/' 
-                className='block text-gray-600 hover:text-gray-900 font-medium' 
+              <Link
+                to='/'
+                className='block text-gray-600 hover:text-gray-900 font-medium'
                 activeProps={{ className: 'text-blue-600' }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
               </Link>
-              <Link 
-                to='/dashboard' 
-                className='block text-gray-600 hover:text-gray-900 font-medium' 
+              <Link
+                to='/dashboard'
+                className='block text-gray-600 hover:text-gray-900 font-medium'
                 activeProps={{ className: 'text-blue-600' }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Dashboard
               </Link>
-              <Link 
-                to='/about' 
-                className='block text-gray-600 hover:text-gray-900 font-medium' 
+              <Link
+                to='/about'
+                className='block text-gray-600 hover:text-gray-900 font-medium'
                 activeProps={{ className: 'text-blue-600' }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About Us
               </Link>
-              <Link 
-                to='/contact' 
-                className='block text-gray-600 hover:text-gray-900 font-medium' 
+              <Link
+                to='/contact'
+                className='block text-gray-600 hover:text-gray-900 font-medium'
                 activeProps={{ className: 'text-blue-600' }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
               </Link>
+              <Link to="/login">
+                <Button size="lg" className='block text-gray-600 hover:text-gray-900 font-medium'>
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="outline" size="lg" className='block text-gray-600 hover:text-gray-900 font-medium'>
+                  Create Account
+                </Button>
+              </Link>
             </div>
+
           </div>
         )}
       </div>
-    </header> 
+    </header>
   )
 }
