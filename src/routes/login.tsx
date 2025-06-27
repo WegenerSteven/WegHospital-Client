@@ -32,8 +32,6 @@ function LoginPage() {
       setIsLoading(true)
       
       try {
-        // Since authentication is disabled, we'll just simulate a login
-        // In a real app, you would call your auth API here
         await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
         
         toast.success('Login successful! Redirecting to dashboard...')

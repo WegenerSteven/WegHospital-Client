@@ -14,18 +14,6 @@ export const Route = createFileRoute('/register')({
   component: RegisterPage,
 })
 
-interface RegisterFormData {
-  firstName: string
-  lastName: string
-  email: string
-  password: string
-  confirmPassword: string
-  role: 'patient' | 'doctor' | 'admin'
-  phoneNumber: string
-  specialty?: string
-  yearsOfExperience?: number
-}
-
 const specialties = [
   'Cardiology',
   'Dermatology',
@@ -67,6 +55,19 @@ function RegisterPage() {
       setIsLoading(true)
       
       try {
+        // Basic validation
+        if (!value.firstName || !value.lastName || !value.email || !value.password) {
+          toast.error('Please fill in all required fields.')
+          setIsLoading(false)
+          return
+        }
+
+        if (value.password !== value.confirmPassword) {
+          toast.error('Passwords do not match.')
+          setIsLoading(false)
+          return
+        }
+
         // Since authentication is disabled, we'll just simulate registration
         // In a real app, you would call your auth API here
         await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API call
@@ -83,21 +84,6 @@ function RegisterPage() {
       }
     },
   })
-
-  const selectedRole = form.store.useStore((state) => state.values.role)
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return <UserCheck className="h-5 w-5" />
-      case 'doctor':
-        return <Stethoscope className="h-5 w-5" />
-      case 'patient':
-        return <User className="h-5 w-5" />
-      default:
-        return <User className="h-5 w-5" />
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
@@ -138,7 +124,7 @@ function RegisterPage() {
                 {(field) => (
                   <div className="space-y-2">
                     <Label htmlFor={field.name}>Account Type</Label>
-                    <Select onValueChange={field.handleChange} value={field.state.value}>
+                    <Select onValueChange={(value) => field.handleChange(value as typeof field.state.value)} value={field.state.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
@@ -293,13 +279,17 @@ function RegisterPage() {
               </form.Field>
 
               {/* Doctor-specific fields */}
-              {selectedRole === 'doctor' && (
-                <>
-                  <form.Field
-                    name="specialty"
-                    validators={{
-                      onChange: ({ value }) =>
-                        selectedRole === 'doctor' && !value ? 'Specialty is required for doctors' : undefined,
+              <form.Subscribe
+                selector={(state) => state.values.role}
+              >
+                {(role) => (
+                  role === 'doctor' && (
+                    <>
+                      <form.Field
+                        name="specialty"
+                        validators={{
+                          onChange: ({ value }) =>
+                            role === 'doctor' && !value ? 'Specialty is required for doctors' : undefined,
                     }}
                   >
                     {(field) => (
@@ -330,7 +320,7 @@ function RegisterPage() {
                     name="yearsOfExperience"
                     validators={{
                       onChange: ({ value }) => {
-                        if (selectedRole === 'doctor' && (value < 0 || value > 50)) {
+                        if (role === 'doctor' && (value < 0 || value > 50)) {
                           return 'Years of experience must be between 0 and 50'
                         }
                         return undefined
@@ -359,8 +349,10 @@ function RegisterPage() {
                       </div>
                     )}
                   </form.Field>
-                </>
-              )}
+                    </>
+                  )
+                )}
+              </form.Subscribe>
 
               {/* Password Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
