@@ -1,24 +1,15 @@
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+// import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { doctorApi, type CreateDoctorDto } from '@/lib/api'
+import type {CreateDoctorDto, DoctorFormData} from '@/types/index'
+import { doctorApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
-interface DoctorFormData {
-  firstName: string
-  lastName: string
-  email: string
-  phoneNumber: string
-  specialty: string
-  yearsOfExperience: number
-  password: string
-  status: boolean
-}
 
 interface DoctorRegistrationFormProps {
   onCancel?: () => void

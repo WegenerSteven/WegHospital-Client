@@ -13,6 +13,7 @@ interface PatientRegistrationData {
   firstName: string;
   lastName: string;
   email: string;
+  password: string;
   dateOfBirth: string;
   address: string;
   city?: string;
@@ -30,6 +31,7 @@ export default function PatientRegistrationForm() {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
+        password: data.password,
         role: 'patient',
       });
 
@@ -62,6 +64,7 @@ export default function PatientRegistrationForm() {
       firstName: '',
       lastName: '',
       email: '',
+      password: '',
       dateOfBirth: '',
       address: '',
       city: '',
@@ -178,6 +181,38 @@ export default function PatientRegistrationForm() {
                   onBlur={field.handleBlur}
                   className="mt-1"
                   placeholder="john.doe@example.com"
+                />
+                {field.state.meta.isTouched && field.state.meta.errors.length ? (
+                  <p className="mt-1 text-sm text-red-600">
+                    {field.state.meta.errors[0]}
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field
+            name="password"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value) return 'Password is required'
+                if (value.length < 6) return 'Password must be at least 6 characters'
+                return undefined
+              },
+            }}
+          >
+            {(field) => (
+              <div>
+                <Label htmlFor={field.name}>Password</Label>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  type="password"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  className="mt-1"
+                  placeholder="Enter password (min 6 characters)"
                 />
                 {field.state.meta.isTouched && field.state.meta.errors.length ? (
                   <p className="mt-1 text-sm text-red-600">
@@ -320,7 +355,7 @@ export default function PatientRegistrationForm() {
             <form.Subscribe
               selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
-              {([canSubmit, isSubmitting]) => (
+              {([canSubmit]) => (
                 <Button
                   type="submit"
                   disabled={!canSubmit || createPatientMutation.isPending}
