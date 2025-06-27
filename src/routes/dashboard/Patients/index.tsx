@@ -4,10 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Users, Edit, Trash2, UserPlus, Calendar, MapPin, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ColumnDef } from '@tanstack/react-table'
-
+import type { Patient } from '@/types/index'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
-import { patientApi, type Patient } from '@/lib/api'
+import { patientApi } from '@/lib/api'
 
 export const Route = createFileRoute('/dashboard/Patients/')({
   component: PatientsPage,
@@ -129,6 +129,7 @@ function PatientsPage() {
                 <span className="hidden sm:inline">Edit</span>
               </Button>
             </Link>
+            
             <Button
               variant="outline"
               size="sm"
@@ -175,7 +176,7 @@ function PatientsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pl-16 lg:pl-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Patients</h1>
@@ -199,7 +200,7 @@ function PatientsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pl-16 lg:pl-8">
         {!patients || patients.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
             <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
