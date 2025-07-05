@@ -13,9 +13,13 @@ export // Generic API handler
   ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
+  // Get auth token from localStorage
+  const token = localStorage.getItem('auth_token');
+
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
     ...options,
@@ -23,8 +27,28 @@ export // Generic API handler
 
   const response = await fetch(url, config);
 
+  // Handle 401 Unauthorized
+  if (response.status === 401) {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/login';
+    throw new Error('Authentication failed');
+  }
+
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    const errorText = await response.text();
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+    
+    try {
+      const errorData = JSON.parse(errorText);
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // If not JSON, use response text
+      errorMessage = errorText || errorMessage;
+    }
+    
+    throw new Error(errorMessage);
   }
 
   return response.json();
