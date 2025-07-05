@@ -8,6 +8,8 @@ import type { Patient } from '@/types/index'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { patientApi } from '@/lib/api'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const Route = createFileRoute('/dashboard/Patients/')({
   component: PatientsPage,
@@ -15,6 +17,7 @@ export const Route = createFileRoute('/dashboard/Patients/')({
 
 function PatientsPage() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   
   const { data: patients, isLoading, error } = useQuery({
     queryKey: ['patients'],
@@ -37,6 +40,10 @@ function PatientsPage() {
       deleteMutation.mutate(id)
     }
   }
+
+  // Check if user can perform admin actions
+  const canPerformAdminActions = user?.role === 'admin'
+  const canEditPatients = user?.role === 'admin' || user?.role === 'doctor'
 
   const columns: ColumnDef<Patient>[] = [
     {
@@ -119,29 +126,33 @@ function PatientsPage() {
         const patient = row.original
         return (
           <div className="flex items-center gap-2">
-            <Link to="/patient-edit/$id" params={{ id: patient.patientId.toString() }}>
+            {canEditPatients && (
+              <Link to="/patient-edit/$id" params={{ id: patient.patientId.toString() }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-600 hover:text-blue-700"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Edit</span>
+                </Button>
+              </Link>
+            )}
+            
+            {canPerformAdminActions && (
               <Button
                 variant="outline"
                 size="sm"
-                className="text-blue-600 hover:text-blue-700"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => handleDeletePatient(patient.patientId)}
+                disabled={deleteMutation.isPending}
               >
-                <Edit className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Edit</span>
+                <Trash2 className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">
+                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                </span>
               </Button>
-            </Link>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 hover:text-red-700"
-              onClick={() => handleDeletePatient(patient.patientId)}
-              disabled={deleteMutation.isPending}
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </span>
-            </Button>
+            )}
           </div>
         )
       },
@@ -173,56 +184,62 @@ function PatientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pl-16 lg:pl-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Patients</h1>
-              <p className="text-gray-600 mt-1">
-                Manage and view all registered patients
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                Total: {patients?.length || 0}
+    <ProtectedRoute requiredRoles={['admin', 'doctor', 'patient']}>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pl-16 lg:pl-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Patients</h1>
+                <p className="text-gray-600 mt-1">
+                  Manage and view all registered patients
+                </p>
               </div>
-              <Link to="/patient-register">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add Patient
-                </Button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  Total: {patients?.length || 0}
+                </div>
+                {canEditPatients && (
+                  <Link to="/patient-register">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Patient
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pl-16 lg:pl-8">
-        {!patients || patients.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No patients yet</h3>
-            <p className="text-gray-600 mb-6">Get started by adding your first patient.</p>
-            <Link to="/patient-register">
-              <Button>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Patient
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={patients}
-            searchKey="profile.firstName"
-            searchPlaceholder="Search patients..."
-          />
-        )}
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pl-16 lg:pl-8">
+          {!patients || patients.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-12 text-center">
+              <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No patients yet</h3>
+              <p className="text-gray-600 mb-6">Get started by adding your first patient.</p>
+              {canEditPatients && (
+                <Link to="/patient-register">
+                  <Button>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Add Patient
+                  </Button>
+                </Link>
+              )}
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={patients}
+              searchKey="profile.firstName"
+              searchPlaceholder="Search patients..."
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }
 

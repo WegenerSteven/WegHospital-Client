@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { appointmentApi } from '@/lib/api'
 import AppointmentForm from '@/components/AppointmentForm'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
 
 
 export const Route = createFileRoute('/dashboard/appointments/')({
@@ -18,6 +20,7 @@ export const Route = createFileRoute('/dashboard/appointments/')({
 
 function AppointmentsPage() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   
   const { data: appointments = [], isLoading, error } = useQuery({
@@ -41,6 +44,11 @@ function AppointmentsPage() {
       deleteMutation.mutate(id)
     }
   }
+
+  // Check if user can perform admin actions
+  const canPerformAdminActions = user?.role === 'admin'
+  const canEditAppointments = user?.role === 'admin' || user?.role === 'doctor'
+  const canScheduleAppointments = user?.role === 'admin' || user?.role === 'doctor' || user?.role === 'patient'
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -125,24 +133,28 @@ function AppointmentsPage() {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-blue-600 hover:text-blue-700"
-          >
-            <Edit className="w-4 h-4 mr-1" />
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-red-600 hover:text-red-700"
-            onClick={() => handleDeleteAppointment(row.original.appointmentId)}
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="w-4 h-4 mr-1" />
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-          </Button>
+          {canEditAppointments && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <Edit className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+          )}
+          {canPerformAdminActions && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 hover:text-red-700"
+              onClick={() => handleDeleteAppointment(row.original.appointmentId)}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          )}
         </div>
       ),
     },
@@ -173,55 +185,61 @@ function AppointmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pl-16 lg:pl-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Appointments</h1>
-            <div className="text-sm text-gray-600">
-              Total Appointments: {appointments?.length || 0}
+    <ProtectedRoute requiredRoles={['admin', 'doctor', 'patient']}>
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pl-16 lg:pl-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Appointments</h1>
+              <div className="text-sm text-gray-600">
+                Total Appointments: {appointments?.length || 0}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pl-16 lg:pl-8">
-        <div className="mb-8">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3">
-                <CalendarPlus className="w-5 h-5 mr-2" />
-                Schedule New Appointment
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <AppointmentForm onCancel={() => setIsDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {!appointments || appointments.length === 0 ? (
-          <div className="bg-white rounded-lg shadow px-6 py-12 text-center">
-            <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments yet</h3>
-            <p className="text-gray-600 mb-4">Get started by scheduling your first appointment.</p>
-            <Button 
-              className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              Schedule Appointment
-            </Button>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pl-16 lg:pl-8">
+          <div className="mb-8">
+            {canScheduleAppointments && (
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3">
+                    <CalendarPlus className="w-5 h-5 mr-2" />
+                    Schedule New Appointment
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <AppointmentForm onCancel={() => setIsDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={appointments}
-            searchKey="status"
-            searchPlaceholder="Search appointments..."
-            title="Appointment Management"
-          />
-        )}
-      </main>
-    </div>
+
+          {!appointments || appointments.length === 0 ? (
+            <div className="bg-white rounded-lg shadow px-6 py-12 text-center">
+              <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments yet</h3>
+              <p className="text-gray-600 mb-4">Get started by scheduling your first appointment.</p>
+              {canScheduleAppointments && (
+                <Button 
+                  className="bg-purple-600 hover:bg-purple-700"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  Schedule Appointment
+                </Button>
+              )}
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={appointments}
+              searchKey="status"
+              searchPlaceholder="Search appointments..."
+              title="Appointment Management"
+            />
+          )}
+        </main>
+      </div>
+    </ProtectedRoute>
   )
 }

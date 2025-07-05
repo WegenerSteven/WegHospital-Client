@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { doctorApi } from '@/lib/api'
 import DoctorRegistrationForm from '@/components/DoctorRegistrationForm'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
 
 
 export const Route = createFileRoute('/dashboard/Doctors/')({
@@ -18,6 +20,7 @@ export const Route = createFileRoute('/dashboard/Doctors/')({
 
 function DoctorsPage() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const { data: doctors = [], isLoading, error } = useQuery({
@@ -41,6 +44,9 @@ function DoctorsPage() {
       deleteMutation.mutate(id)
     }
   }
+
+  // Check if user can perform admin actions
+  const canPerformAdminActions = user?.role === 'admin'
 
   const columns: ColumnDef<Doctor>[] = [
     {
@@ -104,28 +110,31 @@ function DoctorsPage() {
         const doctor = row.original
         return (
           <div className="flex items-center space-x-2">
-            <Link to="/patient-edit$id" params={{ id: doctor.doctorId.toString() }}>
+            <Link to="/doctor-edit/$id" params={{ id: doctor.doctorId.toString() }}>
               <Button
                 variant="outline"
                 size="sm"
                 className="text-blue-600 hover:text-blue-700"
                 onClick={() => (setIsDialogOpen(true))}
+                disabled={!canPerformAdminActions}
               >
                 <Edit className="w-4 h-4 mr-1" />
                 Edit
               </Button>
             </Link>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 hover:text-red-700"
-              onClick={() => handleDeleteDoctor(row.original.doctorId)}
-              disabled={deleteMutation.isPending}
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </Button>
+            {canPerformAdminActions && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => handleDeleteDoctor(row.original.doctorId)}
+                disabled={deleteMutation.isPending}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            )}
           </div>
         )
       },
@@ -157,7 +166,8 @@ function DoctorsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ProtectedRoute requiredRoles={['admin', 'doctor']}>
+      <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pl-16 lg:pl-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -207,5 +217,6 @@ function DoctorsPage() {
         )}
       </main>
     </div>
+    </ProtectedRoute>
   )
 }
