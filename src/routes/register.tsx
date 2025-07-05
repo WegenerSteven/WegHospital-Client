@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { Heart, Eye, EyeOff, User, UserCheck, Stethoscope } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -9,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const Route = createFileRoute('/register')({
   component: RegisterPage,
@@ -35,9 +35,16 @@ const specialties = [
 
 function RegisterPage() {
   const navigate = useNavigate()
+  const { register, isLoading: authLoading, isAuthenticated } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate({ to: '/dashboard' })
+    return null
+  }
 
   const form = useForm({
     defaultValues: {
@@ -46,7 +53,7 @@ function RegisterPage() {
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'patient' as 'patient' | 'doctor' | 'admin',
+      role: 'patient' as 'patient' | 'doctor' | 'admin' | 'user',
       phoneNumber: '',
       specialty: '',
       yearsOfExperience: 0,
@@ -57,28 +64,29 @@ function RegisterPage() {
       try {
         // Basic validation
         if (!value.firstName || !value.lastName || !value.email || !value.password) {
-          toast.error('Please fill in all required fields.')
-          setIsLoading(false)
           return
         }
 
         if (value.password !== value.confirmPassword) {
-          toast.error('Passwords do not match.')
-          setIsLoading(false)
           return
         }
 
-        // Since authentication is disabled, we'll just simulate registration
-        // In a real app, you would call your auth API here
-        await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API call
+        await register({
+          firstName: value.firstName,
+          lastName: value.lastName,
+          email: value.email,
+          password: value.password,
+          role: value.role,
+          ...(value.role === 'doctor' && {
+            specialty: value.specialty,
+            yearsOfExperience: value.yearsOfExperience,
+            phoneNumber: value.phoneNumber,
+          }),
+        })
         
-        toast.success('Account created successfully! Please sign in.')
-        
-        setTimeout(() => {
-          navigate({ to: '/login' })
-        }, 1500)
+        navigate({ to: '/login' })
       } catch (error) {
-        toast.error('Registration failed. Please try again.')
+        console.error('Registration error:', error)
       } finally {
         setIsLoading(false)
       }
@@ -139,6 +147,12 @@ function RegisterPage() {
                           <div className="flex items-center">
                             <Stethoscope className="h-4 w-4 mr-2" />
                             Doctor
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="user">
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2" />
+                            User
                           </div>
                         </SelectItem>
                         <SelectItem value="admin">
@@ -477,9 +491,9 @@ function RegisterPage() {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={!canSubmit || isSubmitting || isLoading}
+                    disabled={!canSubmit || isSubmitting || isLoading || authLoading}
                   >
-                    {isLoading ? 'Creating account...' : 'Create Account'}
+                    {isLoading || authLoading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 )}
               </form.Subscribe>

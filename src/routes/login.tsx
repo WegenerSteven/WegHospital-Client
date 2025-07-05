@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { Heart, Eye, EyeOff } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -20,8 +20,15 @@ interface LoginFormData {
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { login, isLoading: authLoading, isAuthenticated } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate({ to: '/dashboard' })
+    return null
+  }
 
   const form = useForm({
     defaultValues: {
@@ -32,15 +39,11 @@ function LoginPage() {
       setIsLoading(true)
       
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-        
-        toast.success('Login successful! Redirecting to dashboard...')
-        
-        setTimeout(() => {
-          navigate({ to: '/dashboard' })
-        }, 1500)
+        await login(value.email, value.password)
+        navigate({ to: '/dashboard' })
       } catch (error) {
-        toast.error('Login failed. Please check your credentials.')
+        // Error is handled in AuthContext
+        console.error('Login error:', error)
       } finally {
         setIsLoading(false)
       }
@@ -181,9 +184,9 @@ function LoginPage() {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={!canSubmit || isSubmitting || isLoading}
+                    disabled={!canSubmit || isSubmitting || isLoading || authLoading}
                   >
-                    {isLoading ? 'Signing in...' : 'Sign In'}
+                    {isLoading || authLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 )}
               </form.Subscribe>
@@ -202,12 +205,6 @@ function LoginPage() {
           </form>
         </Card>
 
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h3 className="text-sm font-medium text-yellow-800 mb-2">Demo Credentials</h3>
-          <p className="text-xs text-yellow-600 mb-1">Email: admin@hospital.com</p>
-          <p className="text-xs text-yellow-600">Password: admin123</p>
-        </div>
       </div>
     </div>
   )
