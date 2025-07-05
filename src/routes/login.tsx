@@ -13,10 +13,6 @@ export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
-interface LoginFormData {
-  email: string
-  password: string
-}
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -52,8 +48,26 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo and Header */}
+      <div className="w-full max-w-md space-y-6">
+        {/* Test Users Info Card */}
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm text-yellow-800">Test Users</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs text-yellow-700 space-y-2">
+            <div>
+              <strong>Admin:</strong> admin@hospital.com / admin123
+            </div>
+            <div>
+              <strong>Doctor:</strong> doctor@hospital.com / doctor123  
+            </div>
+            <div>
+              <strong>User:</strong> test@example.com / password123
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Login Form */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Heart className="h-10 w-10 text-red-500 mr-2" />

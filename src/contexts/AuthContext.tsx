@@ -11,8 +11,8 @@ export interface User {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const savedToken = localStorage.getItem('auth_token');
     const savedUser = localStorage.getItem('auth_user');
     
-    if (savedToken && savedUser) {
+    if (savedToken && savedUser && savedUser !== 'undefined') {
       try {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
@@ -72,6 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('Error parsing saved user data:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
+        localStorage.removeItem('refresh_token');
       }
     }
     setIsLoading(false);
@@ -94,16 +95,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const authData: AuthResponse = await response.json();
-      
-      setUser(authData.user);
-      setToken(authData.access_token);
+      console.log('Login response:', authData);
+
+      // Now we have user data from the backend response
+      const userData: User = authData.user;
+
+      setUser(userData);
+      setToken(authData.accessToken);
       
       // Save to localStorage
-      localStorage.setItem('auth_token', authData.access_token);
-      localStorage.setItem('auth_user', JSON.stringify(authData.user));
-      localStorage.setItem('refresh_token', authData.refresh_token);
+      localStorage.setItem('auth_token', authData.accessToken);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+      if(authData.refreshToken){
+        localStorage.setItem('refresh_token', authData.refreshToken);
+      }
 
-      toast.success(`Welcome back, ${authData.user.firstName}!`);
+      toast.success(`Welcome back, ${userData.firstName}!`);
     } catch (error: any) {
       toast.error(error.message || 'Login failed');
       throw error;
@@ -135,7 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(errorData.message || 'Registration failed');
       }
 
-      const profile = await profileResponse.json();
+      await profileResponse.json();
 
       // If role is doctor, create doctor profile
       if (data.role === 'doctor' && data.specialty && data.phoneNumber !== undefined && data.yearsOfExperience !== undefined) {
