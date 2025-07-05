@@ -1,11 +1,13 @@
 import { Link } from '@tanstack/react-router'
-import { Heart, Menu, X } from 'lucide-react'
+import { Heart, Menu, X, LogOut, User } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, logout, isAuthenticated } = useAuth()
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -54,9 +56,36 @@ export default function Header() {
               Contact
             </Link>
           </nav>
-          <div className="flex gap-4 justify-center hidden md:flex md:items-center md:space-x-4">
-            <Link to="/login"><Button size="lg">Sign In</Button></Link>
-            <Link to="/register"><Button variant="outline" size="lg">Create Account</Button></Link>
+          
+          {/* Desktop auth buttons */}
+          <div className="hidden md:flex md:items-center md:space-x-4">
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <User className="h-5 w-5 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {user?.firstName} {user?.lastName}
+                  </span>
+                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                    {user?.role}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Link to="/login"><Button size="lg">Sign In</Button></Link>
+                <Link to="/register"><Button variant="outline" size="lg">Create Account</Button></Link>
+              </>
+            )}
           </div>
 
 
@@ -106,16 +135,43 @@ export default function Header() {
               >
                 Contact
               </Link>
-              <Link to="/login">
-                <Button size="lg" className='block text-gray-600 hover:text-gray-900 font-medium'>
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button variant="outline" size="lg" className='block text-gray-600 hover:text-gray-900 font-medium'>
-                  Create Account
-                </Button>
-              </Link>
+              
+              {/* Mobile auth buttons */}
+              {isAuthenticated ? (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2 px-4">
+                    <User className="h-5 w-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                      {user?.role}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={logout}
+                    className="w-full flex items-center justify-center space-x-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button size="lg" className="w-full">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button variant="outline" size="lg" className="w-full">
+                      Create Account
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
           </div>
